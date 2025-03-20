@@ -1,5 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
-import Cookies from 'js-cookie';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 export type User = {
   _id: string;
@@ -7,66 +8,73 @@ export type User = {
   email: string;
   phone: string;
   token: string;
+  exp?: number; // Expiration timestamp from JWT
+  iat?: number; // Issued at timestamp
 };
 
+// Server-side cookie functions
+export function setAuthCookie(token: string) {
+  const response = NextResponse.next();
+  response.cookies.set('auth_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60 // 7 days
+  });
+  return response;
+}
+
+export function removeAuthCookie() {
+  const response = NextResponse.next();
+  response.cookies.delete('auth_token');
+  return response;
+}
+
+// Client-side functions
 export function setToken(token: string) {
-  localStorage.setItem('token', token);
-  // Also set a client-side cookie for redundancy
-  Cookies.set('token', token, { expires: 30, path: '/' });
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('token', token);
+  }
 }
 
 export function getToken() {
   if (typeof window !== 'undefined') {
-    const localToken = localStorage.getItem('token');
-    const cookieToken = Cookies.get('token');
-    
-    // Prefer token from cookie (which will match the HTTP-only cookie)
-    return cookieToken || localToken;
+    return localStorage.getItem('token');
   }
   return null;
 }
 
 export function removeToken() {
-  localStorage.removeItem('token');
-  Cookies.remove('token');
-}
-
-export function setUser(user: User) {
-  localStorage.setItem('user', JSON.stringify(user));
-}
-
-export function getUser(): User | null {
   if (typeof window !== 'undefined') {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      return JSON.parse(userStr);
-    }
+    localStorage.removeItem('token');
   }
-  return null;
 }
 
-export function removeUser() {
-  localStorage.removeItem('user');
+export function getUser() {
+  const token = getToken();
+  if (!token) return null;
+  try {
+    return jwtDecode<User>(token);
+  } catch {
+    return null;
+  }
 }
 
 export function isTokenValid() {
-  const token = getToken();
+  const user = getUser();
+  if (!user) return false;
   
-  if (!token) {
-    return false;
-  }
-  
-  try {
-    const decoded: any = jwtDecode(token);
-    return decoded.exp * 1000 > Date.now();
-  } catch (error) {
-    return false;
-  }
+  const now = Date.now() / 1000;
+  return typeof user.exp === 'number' && user.exp > now;
+}
+
+export function isAuthenticated() {
+  return isTokenValid();
 }
 
 export function logout() {
   removeToken();
-  removeUser();
   // Make sure we clear the HTTP-only cookie by making a request to the server
   fetch('/api/logout', { method: 'POST' })
     .catch(err => console.error('Error logging out:', err))
@@ -75,12 +83,14 @@ export function logout() {
     });
 }
 
-export function isAuthenticated() {
-  // For development, return true to bypass authentication
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Development mode: Bypassing client-side authentication check');
-    return true;
+export function setUser(user: User) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('user', JSON.stringify(user));
   }
-  
-  return getUser() !== null && isTokenValid() && !!Cookies.get('token');
+}
+
+export function removeUser() {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('user');
+  }
 } 

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { isAuthenticated } from '@/lib/authClient';
 import Cookies from 'js-cookie';
 
 // Fort interface
@@ -29,13 +28,18 @@ export default function Dashboard() {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    // Debug auth state
-    console.log('Auth check: Cookies available:', Object.keys(Cookies.get()));
-    console.log('Auth check: isAuthenticated() result:', isAuthenticated());
+    // Check authentication status
+    const checkAuth = async () => {
+      try {
+        // For development purposes - always show the dashboard
+        // Remove or modify this in production
+        setAuthChecked(true);
+      } catch (err) {
+        console.error('Error checking authentication:', err);
+      }
+    };
     
-    // For development purposes - if authentication is failing, we'll still show the forts
-    // Remove or modify this in production
-    setAuthChecked(true);
+    checkAuth();
     
     // Fetch forts data when component mounts
     const fetchForts = async () => {
@@ -52,22 +56,18 @@ export default function Dashboard() {
             data = await response.json();
             console.log(`Fetched ${data.length} forts successfully from API`);
           } else {
-            // If response isn't ok, log error but don't throw yet
             console.warn(`API returned status ${response.status}. Using fallback data.`);
             throw new Error('API request failed');
           }
         } catch (apiError) {
           console.error('Error fetching from API, using fallback data:', apiError);
-          // Instead of throwing the error, we'll use the fallback data
           throw new Error('API request failed, using fallback data');
         }
         
-        // If we got data from the API, use it
         if (data && data.length > 0) {
           setForts(data);
           setFilteredForts(data);
         } else {
-          // If no data from API, use fallback
           throw new Error('No forts returned from API');
         }
       } catch (err: any) {
@@ -119,7 +119,7 @@ export default function Dashboard() {
     
     // Seed the database
     seedDatabase();
-  }, [router]);
+  }, []);
 
   // Handle search
   useEffect(() => {
@@ -438,7 +438,7 @@ export default function Dashboard() {
                 </div>
               </div>
               
-              {/* Offline Map Download Section */}
+              {/* Offline Map Section */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-2 text-slate-700">Offline Map</h3>
                 <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">

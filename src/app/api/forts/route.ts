@@ -1,24 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Fort from '@/models/Fort';
 
 // Get all forts
-async function GET(request: NextRequest) {
+export async function GET() {
   try {
+    console.log('API: Starting GET /api/forts request');
     await connectDB();
-
-    // Get all forts, sorted by name
+    console.log('API: Database connected');
+    
     const forts = await Fort.find({}).sort({ name: 1 });
-
-    return NextResponse.json(forts);
-  } catch (error: any) {
-    console.error('Error fetching forts:', error);
+    console.log(`API: Found ${forts.length} forts`);
+    
+    return NextResponse.json(forts, { status: 200 });
+  } catch (error: unknown) {
+    console.error('API ERROR: GET /api/forts failed:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
-      { error: error.message || 'An error occurred while fetching forts' },
+      { error: 'Failed to fetch forts', details: errorMessage },
       { status: 500 }
     );
   }
-}
-
-// Expose the GET endpoint without protection for development
-export { GET }; 
+} 

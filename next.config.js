@@ -2,11 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: [
-      'www.holidify.com',
-      'www.maharashtratourism.gov.in',
-      'upload.wikimedia.org',
-      'www.tourismofmaharashtra.com',
+    domains: ['www.holidify.com', 'upload.wikimedia.org', 'www.maharashtratourism.gov.in', 'www.tourismofmaharashtra.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
     ],
   },
   // Disable font loading optimization which is causing issues
@@ -15,6 +16,10 @@ const nextConfig = {
   },
   // Disable Turbopack since it's causing issues with font loading
   webpack: (config) => {
+    config.module.rules.push({
+      test: /\.(woff|woff2|eot|ttf|otf)$/i,
+      type: 'asset/resource',
+    });
     return config;
   },
 }
