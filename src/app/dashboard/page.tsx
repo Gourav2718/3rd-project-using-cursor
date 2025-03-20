@@ -270,7 +270,7 @@ export default function Dashboard() {
       {/* Header */}
       <div className="bg-slate-900 text-white py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold">all forts list</h1>
+          <h1 className="text-3xl font-bold">All forts list</h1>
           <p className="mt-2">Explore the rich heritage of historic forts</p>
         </div>
       </div>
@@ -291,7 +291,7 @@ export default function Dashboard() {
         {(!loading || forts.length > 0) && (
           <>
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-slate-800 mb-4">all forts list</h2>
+              <h2 className="text-2xl font-bold text-slate-800 mb-4">All forts list</h2>
               <p className="text-slate-600 mb-6">
                 Maharashtra is home to over 350 forts, each with its own unique history and architecture. 
                 These forts were built by various dynasties including the Marathas, who under the leadership 
