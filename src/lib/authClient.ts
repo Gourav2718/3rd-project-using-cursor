@@ -6,8 +6,9 @@ export type User = {
   _id: string;
   name: string;
   email: string;
-  phone: string;
+  phone?: string;
   token: string;
+  isAdmin?: boolean;
   exp?: number; // Expiration timestamp from JWT
   iat?: number; // Issued at timestamp
 };

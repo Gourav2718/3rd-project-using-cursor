@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
-import User from '@/models/User';
+import Admin from '@/models/Admin';
 import { signToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
@@ -9,26 +9,26 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = await request.json();
 
-    // Find user by email
-    const user = await User.findOne({ email }).select('+password');
+    // Find admin by email
+    const admin = await Admin.findOne({ email }).select('+password');
 
-    // Check if user exists and password matches
-    if (!user || !(await user.matchPassword(password))) {
+    // Check if admin exists and password matches
+    if (!admin || !(await admin.matchPassword(password))) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
       );
     }
 
-    // Generate token
-    const token = signToken(user._id.toString());
+    // Generate token with admin flag
+    const token = signToken(admin._id.toString(), true);
 
     // Create response
     const response = NextResponse.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
+      _id: admin._id,
+      name: admin.name,
+      email: admin.email,
+      isAdmin: true,
       token,
     });
 
@@ -39,13 +39,12 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       path: '/',
       secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'lax',
       maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 
     return response;
   } catch (error: any) {
-    console.error('Error in login:', error);
+    console.error('Error in admin login:', error);
     return NextResponse.json(
       { error: error.message || 'An error occurred during login' },
       { status: 500 }

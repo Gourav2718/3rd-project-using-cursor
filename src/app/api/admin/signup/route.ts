@@ -1,34 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
-import User from '@/models/User';
+import Admin from '@/models/Admin';
 import { signToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
 
-    const { email, password } = await request.json();
+    const { name, email, password } = await request.json();
 
-    // Find user by email
-    const user = await User.findOne({ email }).select('+password');
+    // Check if admin already exists
+    const adminExists = await Admin.findOne({ email });
 
-    // Check if user exists and password matches
-    if (!user || !(await user.matchPassword(password))) {
+    if (adminExists) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
+        { error: 'Admin with this email already exists' },
+        { status: 400 }
       );
     }
 
-    // Generate token
-    const token = signToken(user._id.toString());
+    // Create new admin
+    const admin = await Admin.create({
+      name,
+      email,
+      password,
+    });
+
+    // Generate token with admin flag
+    const token = signToken(admin._id.toString(), true);
 
     // Create response
     const response = NextResponse.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
+      _id: admin._id,
+      name: admin.name,
+      email: admin.email,
+      isAdmin: true,
       token,
     });
 
@@ -39,15 +45,14 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       path: '/',
       secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'lax',
       maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 
     return response;
   } catch (error: any) {
-    console.error('Error in login:', error);
+    console.error('Error in admin signup:', error);
     return NextResponse.json(
-      { error: error.message || 'An error occurred during login' },
+      { error: error.message || 'An error occurred during signup' },
       { status: 500 }
     );
   }

@@ -40,6 +40,17 @@ export default function Navbar() {
               Home
             </Link>
             
+            {isLoggedIn && (
+              <Link 
+                href="/admin" 
+                className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  pathname === '/admin' ? 'bg-slate-900 text-white' : 'text-gray-300 hover:bg-slate-700'
+                }`}
+              >
+                Admin
+              </Link>
+            )}
+            
             {isLoggedIn ? (
               <>
                 <Link 
@@ -65,7 +76,7 @@ export default function Navbar() {
                     pathname === '/login' ? 'bg-slate-900 text-white' : 'text-gray-300 hover:bg-slate-700'
                   }`}
                 >
-                  login
+                  Login
                 </Link>
                 <Link 
                   href="/signup" 
@@ -73,7 +84,15 @@ export default function Navbar() {
                     pathname === '/signup' ? 'bg-slate-900 text-white' : 'text-gray-300 hover:bg-slate-700'
                   }`}
                 >
-                  sign up
+                  Sign Up
+                </Link>
+                <Link 
+                  href="/admin/login" 
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    pathname === '/admin/login' ? 'bg-slate-900 text-white' : 'text-gray-300 hover:bg-slate-700'
+                  }`}
+                >
+                  Admin Login
                 </Link>
               </>
             )}
@@ -114,8 +133,8 @@ export default function Navbar() {
       {/* Mobile menu */}
       <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:hidden`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
               pathname === '/' ? 'bg-slate-900 text-white' : 'text-gray-300 hover:bg-slate-700'
             }`}
@@ -123,10 +142,21 @@ export default function Navbar() {
             Home
           </Link>
           
+          {isLoggedIn && (
+            <Link 
+              href="/admin" 
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                pathname === '/admin' ? 'bg-slate-900 text-white' : 'text-gray-300 hover:bg-slate-700'
+              }`}
+            >
+              Admin
+            </Link>
+          )}
+          
           {isLoggedIn ? (
             <>
-              <Link 
-                href="/dashboard" 
+              <Link
+                href="/dashboard"
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   pathname === '/dashboard' ? 'bg-slate-900 text-white' : 'text-gray-300 hover:bg-slate-700'
                 }`}
@@ -142,21 +172,29 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link 
-                href="/login" 
+              <Link
+                href="/login"
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   pathname === '/login' ? 'bg-slate-900 text-white' : 'text-gray-300 hover:bg-slate-700'
                 }`}
               >
-                login
+                Login
               </Link>
-              <Link 
-                href="/signup" 
+              <Link
+                href="/signup"
                 className={`block px-3 py-2 rounded-md text-base font-medium ${
                   pathname === '/signup' ? 'bg-slate-900 text-white' : 'text-gray-300 hover:bg-slate-700'
                 }`}
               >
-                sign up
+                Sign Up
+              </Link>
+              <Link 
+                href="/admin/login" 
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  pathname === '/admin/login' ? 'bg-slate-900 text-white' : 'text-gray-300 hover:bg-slate-700'
+                }`}
+              >
+                Admin Login
               </Link>
             </>
           )}

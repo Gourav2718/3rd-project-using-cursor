@@ -31,11 +31,23 @@ export default function Dashboard() {
     // Check authentication status
     const checkAuth = async () => {
       try {
-        // For development purposes - always show the dashboard
-        // Remove or modify this in production
+        const token = localStorage.getItem('token');
+        const authCookie = Cookies.get('auth_token');
+        
+        if (!token && !authCookie) {
+          router.push('/login');
+          return;
+        }
+        
+        // If there's an auth cookie but no token in localStorage, sync them
+        if (authCookie && !token) {
+          localStorage.setItem('token', authCookie);
+        }
+        
         setAuthChecked(true);
       } catch (err) {
         console.error('Error checking authentication:', err);
+        router.push('/login');
       }
     };
     
@@ -441,7 +453,7 @@ export default function Dashboard() {
               {/* Offline Map Section */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-2 text-slate-700">Offline Map</h3>
-                <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
+                <div className="bg-amber-500 rounded-lg p-4 border border-amber-100">
                   <div className="flex items-center">
                     <div className="mr-4 text-amber-500">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

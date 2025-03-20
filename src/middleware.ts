@@ -1,46 +1,41 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
-  // Get the path the user is trying to access
   const path = request.nextUrl.pathname;
   
-  // Define paths that should be accessible only to authenticated users
-  const isPrivatePath = path === '/dashboard' || path.startsWith('/dashboard/') || path.startsWith('/profile');
+  // Public paths that don't require authentication
+  const isPublicPath = path === '/login' || path === '/signup' || path === '/' || 
+                      path === '/admin/login' || path === '/admin/signup';
   
-  // Define paths that should only be accessible to public (non-authenticated) users
-  const isAuthPath = path === '/login' || path === '/signup';
+  // Get auth token from cookies for regular users
+  const isAuthenticated = request.cookies.has('auth_token');
   
-  // Get the token from cookies
-  const token = request.cookies.get('token')?.value;
+  // Admin routes - will be checked via localStorage on the client side
+  const isAdminRoute = path.startsWith('/admin') && path !== '/admin/login' && path !== '/admin/signup';
   
-  // If the user tries to access private paths without being authenticated
-  if (isPrivatePath && !token) {
-    // Redirect to login page
+  // Redirect to login if trying to access protected route while not authenticated
+  if (!isAuthenticated && !isPublicPath && !path.startsWith('/api') && !isAdminRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
   
-  // If the user is authenticated and tries to access authentication pages
-  if (isAuthPath && token) {
-    // Redirect to dashboard page
+  // Redirect to dashboard if trying to access login or signup while authenticated
+  if (isAuthenticated && (path === '/login' || path === '/signup')) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
   
-  // Otherwise, continue
   return NextResponse.next();
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
+     * - api/auth (API routes that handle authentication)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$).*)',
   ],
 }; 
